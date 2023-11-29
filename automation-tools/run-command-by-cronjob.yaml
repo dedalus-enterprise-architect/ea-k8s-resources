@@ -1,0 +1,143 @@
+#
+# =======================================
+# AUTHOR        : Claudio Prato @TeamEA Dedalus S.p.A.
+# DATE          : 2023/11/29
+# PURPOSE       : run command against an openshift/kubernetes cluster from a POD
+# SPECIAL NOTES : tested on Openshift 4.9, k8s 1.25
+# =======================================
+#
+# 
+# Custom Service Account
+# 
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: @namespace@
+  name: sa-@application_name@-utility
+  labels:
+    app:  sa-@application_name@-utility
+---
+# 
+# Custom Service Account: Role
+# 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: @namespace@
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: sa-@application_name@-utility-role
+  labels:
+    app:  sa-@application_name@-utility
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  - pods
+  - configmaps
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  - route.openshift.io
+  resources:
+  - routes
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  - apps.openshift.io
+  resources:
+  - deployment
+  - deployment/scale
+  # ::: WARNING ::: Openshift objects:
+  # - deploymentconfigs
+  # - deploymentconfigs/scale
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+---
+# 
+# Custom Service Account: RoleBinding
+# 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sa-@application_name@-utility-binding
+  labels:
+    app:  sa-@application_name@-utility
+subjects:
+- kind: ServiceAccount
+  name: sa-@application_name@-utility
+  namespace: @namespace@
+roleRef:
+  kind: Role
+  name: sa-@application_name@-utility-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# 
+# CronJob
+# 
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  namespace: @namespace@
+  name: sa-@application_name@-utility-cron
+  labels:
+    app:  sa-@application_name@-utility
+spec:
+  startingDeadlineSeconds: 200
+  schedule: '0 0 * * *'
+  concurrencyPolicy: "Forbid"
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 4
+      # it means how much time the resource will survive afterward has been succeeded
+      template:
+        spec:
+          serviceAccountName: sa-@application_name@-utility
+          terminationGracePeriodSeconds: 0
+          restartPolicy: Never
+          containers:
+          - name: sa-@application_name@-run-command
+            imagePullPolicy: Always
+            image: public.ecr.aws/dedalus-ea/ea-utils:v4-7
+            # ::: WARNING ::: Below a k8s generic command example but if you run in Openshift, you have to change the command snippet.
+            command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              log() {
+                echo "[$(date +%F_%H:%M:%S)] - " $@
+              };
+              resources=$(kubectl get ingress,service,deployment,pod,secret,configmap --selector app=sa-@application_name@-utility -o name);
+              if [ -n "$resources" ]; then
+                log "clean resources";
+                kubectl delete $resources;
+              fi
+              log "restart the environment";
+              kubectl process sa-@application_name@-utility \
+                -p PARAM_1=https://app-8080-tcp-@namespace@.apps.test-cluster.custom.domain.com/others-service \
+                -p PARAM_2=jdbc:postgresql://postgresql:5432/datasource | kubectl create -f -
