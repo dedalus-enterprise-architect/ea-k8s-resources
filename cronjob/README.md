@@ -6,7 +6,7 @@ It follows a collection of some uses cases.
 
 This use's case aims is how to get access to cluster resources by running commands from inside a POD:
 
-1. copy on local filesystem and make changes that fit your needs: ```https://github.com/dedalus-enterprise-architect/ea-k8s-resources/blob/main/automation-tools/01_manage-cluster-resources.yaml```
+1. copy on local filesystem and make changes that fit your needs: ```https://github.com/dedalus-enterprise-architect/ea-k8s-resources/blob/main/cronjob/01_manage-cluster-resources.yaml```
 
 1. before doing anythings, you must customize the following placeholders by your settings:
     * replace the "_@namespace@_" by the namespace where the objects will be stored in.
@@ -16,7 +16,7 @@ This use's case aims is how to get access to cluster resources by running comman
 
 1. create the object in the cluster applying the yaml file just created, but set the correct namespace before execute the following command:
 
-        kubectl apply -f https://raw.githubusercontent.com/dedalus-enterprise-architect/ea-k8s-resources/main/automation-tools/01_manage-cluster-resources.yaml -n @namespace@
+        kubectl apply -f https://raw.githubusercontent.com/dedalus-enterprise-architect/ea-k8s-resources/main/cronjob/01_manage-cluster-resources.yaml -n @namespace@
 
 1. you can trigger manually the cron job but replace all the placeholders before execute the following command:
 
@@ -26,7 +26,7 @@ This use's case aims is how to get access to cluster resources by running comman
 
 This use's case aims is how to get access to cluster resources by running commands from inside a POD:
 
-1. copy on local filesystem and make changes that fit your needs: ```https://github.com/dedalus-enterprise-architect/ea-k8s-resources/blob/main/automation-tools/02_run-command-vs-pvc```
+1. copy on local filesystem and make changes that fit your needs: ```https://github.com/dedalus-enterprise-architect/ea-k8s-resources/blob/main/cronjob/02_run-command-vs-pvc.yaml```
 
 1. before doing anythings, you must customize the following placeholders by your settings:
     * replace the "_@application\_name@_" by the application name you want work on.
@@ -37,7 +37,7 @@ This use's case aims is how to get access to cluster resources by running comman
 
 1. create the object in the cluster applying the yaml file just created, but set the correct namespace before execute the following command:
 
-        kubectl apply -f https://raw.githubusercontent.com/dedalus-enterprise-architect/ea-k8s-resources/main/automation-tools/02_run-command-vs-pvc -n @namespace@
+        kubectl apply -f https://raw.githubusercontent.com/dedalus-enterprise-architect/ea-k8s-resources/main/cronjob/02_run-command-vs-pvc.yaml -n @namespace@
 
 1. you can trigger manually the cron job but replace all the placeholders before execute the following command:
 

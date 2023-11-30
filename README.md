@@ -1,6 +1,8 @@
 # ea-k8s-resources
 
-A  k8s compatible list of tools and resources.
+> ## Public Repository
+
+This project collects a k8s compatible list of tools and resources.
 
 It follows the list:
 
