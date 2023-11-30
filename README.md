@@ -4,4 +4,4 @@ A  k8s compatible list of tools and resources.
 
 It follows the list:
 
-* Automation Tools - interacting with cluster objects from a POD
+* cronJob - interacting with cluster objects from inside a POD

@@ -1,0 +1,47 @@
+#
+# =======================================
+# AUTHOR        : Claudio Prato @TeamEA Dedalus S.p.A.
+# DATE          : 2023/11/30
+# PURPOSE       : run command against a PVC from inside a POD
+# SPECIAL NOTES : tested on k8s - 1.25
+# =======================================
+#
+# 
+# CronJob
+# 
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: @application_name@-utility-cronjob
+  labels:
+    app:  @application_name@-utility-cronjob
+spec:
+  startingDeadlineSeconds: 200
+  schedule: '0 0 * * *'
+  concurrencyPolicy: "Forbid"
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 4
+      # it means how much time the resource will survive afterward has been succeeded
+      template:
+        spec:
+          #terminationGracePeriodSeconds: 0
+          # [Never, OnFailure]
+          restartPolicy: Never
+          containers:
+          - name: @application_name@-run-command
+            imagePullPolicy: Always
+            image: public.ecr.aws/dedalus-ea/ea-utils:v4-7
+            volumeMounts:
+            - mountPath: "/opt/pvc-location"
+              name: @type_here_pvc_name@
+            command:
+            - /bin/bash
+            - -c
+            - ls /opt/pvc-location
+          volumes:
+          - name: @type_here_pvc_name@
+            persistentVolumeClaim:
+              claimName: @type_here_pvc_claim_name@

@@ -2,8 +2,8 @@
 # =======================================
 # AUTHOR        : Claudio Prato @TeamEA Dedalus S.p.A.
 # DATE          : 2023/11/29
-# PURPOSE       : run command against an openshift/kubernetes cluster from a POD
-# SPECIAL NOTES : tested on Openshift 4.9, k8s 1.25
+# PURPOSE       : run command against an openshift/kubernetes cluster resources from inside a POD
+# SPECIAL NOTES : tested on Openshift 4.9, k8s - 1.25
 # =======================================
 #
 # 
@@ -15,7 +15,7 @@ metadata:
   namespace: @namespace@
   name: sa-@application_name@-utility
   labels:
-    app:  sa-@application_name@-utility
+    app: @application_name@-utility-cronjob
 ---
 # 
 # Custom Service Account: Role
@@ -27,7 +27,7 @@ metadata:
   # "namespace" omitted since ClusterRoles are not namespaced
   name: sa-@application_name@-utility-role
   labels:
-    app:  sa-@application_name@-utility
+    app: @application_name@-utility-cronjob
 rules:
 - apiGroups:
   - ""
@@ -44,29 +44,52 @@ rules:
   - patch
   - update
   - watch
+# 
+# ::: WARNING ::: Openshift objects
+# - apiGroups:
+#   - ""
+#   - route.openshift.io
+#   resources:
+#   - routes
+#   verbs:
+#   - create
+#   - delete
+#   - deletecollection
+#   - get
+#   - list
+#   - patch
+#   - update
+#   - watch
+# 
+# ::: WARNING ::: K8s objects
+# - apiGroups:
+#   - ""
+#   - networking.k8s.io
+#   resources:
+#   - ingress
+#   verbs:
+#   - create
+#   - delete
+#   - deletecollection
+#   - get
+#   - list
+#   - patch
+#   - update
+#   - watch
+#
+# ::: WARNING ::: K8s objects
 - apiGroups:
   - ""
-  - route.openshift.io
+  - apps
   resources:
-  - routes
-  verbs:
-  - create
-  - delete
-  - deletecollection
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  - apps.openshift.io
-  resources:
-  - deployment
-  - deployment/scale
-  # ::: WARNING ::: Openshift objects:
-  # - deploymentconfigs
-  # - deploymentconfigs/scale
+  - deployments
+  - deployments/scale
+# ::: WARNING ::: Openshift objects
+# - apiGroups:
+#   - "apps.openshift.io"
+#   resources:
+#   - deploymentconfigs
+#   - deploymentconfigs/scale
   verbs:
   - create
   - delete
@@ -85,7 +108,7 @@ kind: RoleBinding
 metadata:
   name: sa-@application_name@-utility-binding
   labels:
-    app:  sa-@application_name@-utility
+    app: @application_name@-utility-cronjob
 subjects:
 - kind: ServiceAccount
   name: sa-@application_name@-utility
@@ -102,9 +125,9 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   namespace: @namespace@
-  name: sa-@application_name@-utility-cron
+  name: @application_name@-utility-cronjob
   labels:
-    app:  sa-@application_name@-utility
+    app: @application_name@-utility-cronjob
 spec:
   startingDeadlineSeconds: 200
   schedule: '0 0 * * *'
@@ -124,7 +147,7 @@ spec:
           - name: sa-@application_name@-run-command
             imagePullPolicy: Always
             image: public.ecr.aws/dedalus-ea/ea-utils:v4-7
-            # ::: WARNING ::: Below a k8s generic command example but if you run in Openshift, you have to change the command snippet.
+            # ::: WARNING ::: Below a k8s generic command example but if you run in Openshift, this snippet has to adjusted basing on Openshift directives.
             command:
             - "/bin/sh"
             - "-c"
