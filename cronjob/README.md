@@ -1,16 +1,16 @@
 # CronJobs
 
-Here is a collection of some use cases.
+Here is a collection of use case.
 
 ## 01_manage-cluster-resources
 
-This use case shows how to get access to cluster resources by running commands from inside a POD:
+This use case shows how getting access to cluster resources by executing commands by a POD:
 
 1. copy on local filesystem and make changes to fit your needs: ```https://github.com/dedalus-enterprise-architect/ea-k8s-resources/blob/main/cronjob/01_manage-cluster-resources.yaml```
 
 2. before doing anything, you must customize the following placeholders:
-    * replace the "_@namespace@_" with the namespace where the objects will be stored into
     * replace the "_@application\_name@_" with the target application name
+    * replace the "_@namespace@_" with the namespace where the objects will be stored into
     * modify the script section: "spec.jobTemplate.spec.template.spec.containers.['sa-@application_name@-run-command']" to fit your needs
     * look for the comments labelled with: "::: WARNING :::" inside the manifest and configure the directives where needed
 
@@ -24,7 +24,7 @@ This use case shows how to get access to cluster resources by running commands f
 
 ## 02_run-command-vs-pvc
 
-This use case show how to get access to cluster resources by running commands from inside a POD:
+This use case shows how getting access to cluster resources by executing commands by a POD:
 
 1. copy on local filesystem and make changes to fit your needs: ```https://github.com/dedalus-enterprise-architect/ea-k8s-resources/blob/main/cronjob/02_run-command-vs-pvc.yaml```
 
